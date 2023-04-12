@@ -1,6 +1,6 @@
+from datetime import datetime, timedelta
 from typing import List
 
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from src.database.models import Contact
@@ -44,5 +44,25 @@ async def update_contact(contact_id: int, body: ContactResponse, db: Session) ->
     return contact
 
 
-async def query_contact(firstname: str, lastname: str, email: str, db: Session) -> List[Contact]:
-    return db.query(Contact).filter(or_(Contact.firstname == firstname, Contact.lastname == lastname, Contact.email == email)).all()
+async def querys_contacts(firstname: str, lastname: str, email: str, db: Session) -> List[Contact]:
+    contact_with_firstname = db.query(Contact).filter(Contact.firstname == firstname).all()
+    contact_with_lastname = db.query(Contact).filter(Contact.lastname == lastname).all()
+    contact_with_email = db.query(Contact).filter(Contact.email == email).all()
+    result = []
+    result.extend(contact_with_firstname)
+    result.extend(contact_with_lastname)
+    result.extend(contact_with_email)
+    return result
+
+
+async def birthdays(db: Session) -> List[Contact]:
+    contacts = db.query(Contact).all()
+    result = []
+    delta = timedelta(days=7)
+    delta_date = datetime.now() + delta
+    for contact in contacts:
+        birthday_date = datetime(year=datetime.now().year, month=contact.birthday.month, day=contact.birthday.day)
+        birthday_date_next_year = datetime(year=datetime.now().year + 1, month=contact.birthday.month, day=contact.birthday.day)
+        if datetime.now() < birthday_date <= delta_date or datetime.now() < birthday_date_next_year <= delta_date:
+            result.append(contact)
+    return result

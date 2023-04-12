@@ -45,9 +45,13 @@ async def remove_contact(contact_id: int, db: Session = Depends(get_db)):
     return contact
 
 
-@router.get("/query", response_model=List[ContactResponse])
-async def query_contact(firstname: str = '', lastname: str = '', email: str = '', db: Session = Depends(get_db)):
-    contacts = await repository_contacts.query_contact(firstname, lastname, email, db)
-    if contacts:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contacts not found")
+@router.get("/query/", response_model=List[ContactResponse])
+async def querys_contacts(firstname: str = '', lastname: str = '', email: str = '', db: Session = Depends(get_db)):
+    contacts = await repository_contacts.querys_contacts(firstname, lastname, email, db)
+    return contacts
+
+
+@router.get("/birthdays/", response_model=List[ContactResponse])
+async def birthdays(db: Session = Depends(get_db)):
+    contacts = await repository_contacts.birthdays(db)
     return contacts
